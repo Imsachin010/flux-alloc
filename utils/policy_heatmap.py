@@ -2,7 +2,7 @@ from stable_baselines3 import PPO
 import numpy as np
 import matplotlib.pyplot as plt
 
-model = PPO.load("rl_allocator")
+model = PPO.load("assets/rl_allocator")
 
 util_range = np.linspace(0,1,50)
 frag_range = np.linspace(0,1,50)

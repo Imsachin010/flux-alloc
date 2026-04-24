@@ -4,7 +4,7 @@ import numpy as np
 from gymnasium import spaces
 from stable_baselines3 import PPO
 
-from rl_env import MemoryEnv
+from core.rl_env import MemoryEnv
 
 
 class GymMemoryEnv(gym.Env):
@@ -48,4 +48,4 @@ model = PPO(
 
 model.learn(total_timesteps=200000)
 
-model.save("rl_allocator")
+model.save("assets/rl_allocator")

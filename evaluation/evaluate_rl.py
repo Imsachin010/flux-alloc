@@ -1,11 +1,11 @@
 from stable_baselines3 import PPO
 import random
 
-from heap import Heap
-from allocator_strategies import first_fit, best_fit, worst_fit, random_fit
-from workload_generator import WorkloadGenerator
-from metrics import Metrics
-from rl_env import MemoryEnv
+from core.heap import Heap
+from core.allocator_strategies import first_fit, best_fit, worst_fit, random_fit
+from core.workload_generator import WorkloadGenerator
+from core.metrics import Metrics
+from core.rl_env import MemoryEnv
 
 
 def evaluate_rl(model, episodes=20):
@@ -44,7 +44,7 @@ def evaluate_rl(model, episodes=20):
 
 def main():
 
-    model = PPO.load("rl_allocator")
+    model = PPO.load("assets/rl_allocator")
 
     frag, util = evaluate_rl(model)
 

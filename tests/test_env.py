@@ -1,4 +1,4 @@
-from rl_env import MemoryEnv
+from core.rl_env import MemoryEnv
 import random
 
 env = MemoryEnv()

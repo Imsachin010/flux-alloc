@@ -1,10 +1,10 @@
 import numpy as np
 import random
 
-from heap import Heap
-from allocator_strategies import first_fit, best_fit, worst_fit, random_fit
-from workload_generator import WorkloadGenerator
-from metrics import Metrics
+from core.heap import Heap
+from core.allocator_strategies import first_fit, best_fit, worst_fit, random_fit
+from core.workload_generator import WorkloadGenerator
+from core.metrics import Metrics
 
 
 class MemoryEnv:

@@ -1,358 +1,118 @@
-# FluxAlloc: Reinforcement Learning-Based Memory Allocation
+# FluxAlloc: Transformer-Based Reinforcement Learning Memory Allocator
 
-FluxAlloc is a research-oriented project that explores the use of **Reinforcement Learning (RL)** to improve dynamic memory allocation strategies.
+FluxAlloc is an advanced research project exploring the use of **Reinforcement Learning (RL)** to solve dynamic memory allocation natively. 
 
-Traditional memory allocators rely on static heuristics such as **First Fit**, **Best Fit**, and **Worst Fit**. In this project, we design a **reinforcement learning agent** that learns to dynamically choose the best allocation strategy depending on the current heap state.
-
-The RL agent is trained using **Proximal Policy Optimization (PPO)** and evaluated against classical heuristics across different workload patterns.
+Moving beyond traditional meta-allocators (which simply choose between heuristics like Best-Fit or First-Fit), FluxAlloc implements a **Direct Memory Placement** strategy. It utilizes a **Transformer Feature Extractor** to analyze the memory heap in real-time and explicitly selects the exact free block to allocate, natively masked by `MaskablePPO` to ensure mathematical safety.
 
 ---
 
-# Project Goals
-
-The project aims to:
-
-- Simulate a memory allocator environment
-- Implement classical allocation heuristics
-- Train a reinforcement learning agent to select allocation strategies
-- Compare RL performance with traditional allocators
-- Analyze the learned policy
+## Key Architectural Upgrades
+- **Direct Placement Environment:** Formulated a custom MDP where the agent selects discrete block indices, moving beyond heuristic switching.
+- **Transformer Feature Extractor:** Employs a multi-head self-attention mechanism (`nn.TransformerEncoder`) to process a 128-dimensional state space encompassing both global metrics (Utilization, Fragmentation) and localized free-block embeddings (Age, Size, Position).
+- **Native Action Masking:** Integrates `sb3-contrib`'s `MaskablePPO` to dynamically restrict the policy from selecting invalid or non-existent free blocks, preventing fatal allocation errors during training.
+- **Advanced Reward Function:** A highly tuned, multi-objective reward structure that natively penalizes utilization loss, small fragment generation, and fragmentation density while rewarding largest block preservation.
 
 ---
 
-# Features
+## Project Structure (Modular Clean Architecture)
 
-- Heap memory simulator
-- Classical memory allocation algorithms
-- Reinforcement Learning environment
-- PPO training pipeline
-- TensorBoard training visualization
-- Policy analysis tools
-- Workload generalization experiments
-- Automated result plotting
-
----
-
-# Project Structure
-
-```
-
+```text
 flux-alloc/
-│
-├── heap.py
-├── allocator_strategies.py
-├── workload_generator.py
-├── metrics.py
-│
-├── baseline_experiment.py
-├── rl_env.py
-├── train_agent.py
-├── evaluate_rl.py
-│
-├── analyze_policy.py
-├── policy_heatmap.py
-├── strategy_switch_analysis.py
-│
-├── eval_rl_generalization.py
-├── generate_plots.py
-│
-├── tensorboard_metrics.csv
-├── plots/
-│
-└── rl_allocator.zip
-
+├── core/
+│   ├── heap.py
+│   ├── rl_env_direct_final.py  # The Direct Placement MDP Env
+│   ├── allocator_strategies.py
+│   ├── workload_generator.py
+│   └── metrics.py
+├── policy/
+│   └── custom_policy_transformer.py # Transformer Neural Network
+├── training/
+│   ├── train_direct_final.py
+│   └── train_agent.py
+├── evaluation/
+│   ├── compare_allocators.py   # Main Fairness Benchmark
+│   ├── eval_rl.py              # Fast RL Evaluation
+│   ├── eval_latency.py         # CPU vs Memory Tradeoff
+│   └── eval_rl_generalization.py # Robustness Checks
+├── utils/
+│   ├── plot_training.py
+│   ├── plot_block_preference.py # Visualizes Agent Psychology
+│   └── plot_pareto_tradeoff.py  # Generates Pareto optimal visualizations
+└── assets/
+    ├── rl_direct_allocator.zip # Saved Model
+    └── ... (Generated plots, graphs, and logs)
 ```
 
 ---
 
-# Installation
+## Installation
 
-Create a Python environment:
-
-```
-
+Create and activate a Python environment (Windows):
+```bash
 python -m venv fluxAlloc
-
-```
-
-Activate environment:
-
-**Windows**
-
-```
-
 fluxAlloc\Scripts\activate
-
-```
-
 ```
 
 Install dependencies:
-
-```
-
+```bash
 python -m pip install -r requirements.txt
-
 ```
 
 ---
 
-# Running the Project
+## Running the Project
 
-## 1. Run Baseline Allocators
+Because the repository is organized into a clean Python module structure, you must run scripts using the `-m` flag from the root directory.
 
-Evaluate classical allocation strategies.
-
+### 1. The Ultimate Benchmark (Apples-to-Apples Comparison)
+Run a heavily seeded, identically-matched workload sequence against Best-Fit, First-Fit, Worst-Fit, Random-Fit, and your trained MaskablePPO Agent.
+```bash
+python -m evaluation.compare_allocators
 ```
 
-python baseline_experiment.py
-
+### 2. Fast RL Agent Evaluation
+Quickly evaluate the agent's performance on a single fixed sequence.
+```bash
+python -m evaluation.eval_rl
 ```
 
-Output example:
-
+### 3. CPU vs Memory Latency Tradeoff
+Prove the exact execution time cost (in milliseconds) of using a Neural Network over a standard heuristic `for-loop`.
+```bash
+python -m evaluation.eval_latency
 ```
 
-First Fit
-Fragmentation: 0.617
-Utilization: 0.883
-Failure Rate: 0.515
-
+### 4. Generalization / Robustness
+Test how the RL agent handles unexpected situations, such as heavy Bimodal and Adversarial workloads.
+```bash
+python -m evaluation.eval_rl_generalization
 ```
 
----
-
-# 2. Train the Reinforcement Learning Agent
-
-Train PPO agent to learn allocator policy.
-
+### 5. Generate Visualizations & Graphs
+To regenerate the specific `.png` graphs used in the report:
+```bash
+python -m utils.plot_pareto_tradeoff
+python -m utils.plot_block_preference
+python -m utils.plot_training
 ```
 
-python train_agent.py
-
-```
-
-This will:
-
-- train the RL model
-- log training data
-- save the trained model
-
-Output model:
-
-```
-
-rl_allocator.zip
-
+### 6. Train the Agent from Scratch
+Launch the MaskablePPO trainer with the custom Transformer.
+```bash
+python -m training.train_direct_final
 ```
 
 ---
 
-# 3. View Training with TensorBoard
+## Academic Results Summary
 
-```
-
-tensorboard --logdir=ppo_allocator_logs
-
-```
-
-Open browser:
-
-```
-
-[http://localhost:6006](http://localhost:6006)
-
-```
+Our findings from evaluating the Transformer-based RL agent:
+1. **Generalization Supremacy:** While Best-Fit barely edges out RL on standard uniform workloads, **MaskablePPO crushes Best-Fit on complex Bimodal workloads** (+0.212 vs +0.131 Efficiency Score).
+2. **Computational Cost:** The Transformer architecture provides superior mathematical memory packing but costs roughly **800x more CPU latency** per decision than traditional Best-Fit.
+3. **Behavioral Discovery:** By analyzing block selection preferences, we proved the agent develops targeted preferences (favoring smaller blocks to preserve large, contiguous gaps for the future).
 
 ---
 
-# 4. Evaluate the RL Agent
-
-```
-
-python evaluate_rl.py
-
-```
-
-Example output:
-
-```
-
-RL Agent
-Fragmentation: 0.781
-Utilization: 0.866
-
-```
-
----
-
-# 5. Run Generalization Experiments
-
-Evaluate RL on multiple workload types.
-
-```
-
-python eval_rl_generalization.py
-
-```
-
-Example output:
-
-```
-
-Workload: Uniform
-First Fit | Frag: 0.617 | Util: 0.883
-
-RL Agent | Frag: 0.843 | Util: 0.900
-
-```
-
----
-
-# 6. Analyze Learned Policy
-
-```
-
-python analyze_policy.py
-
-```
-
-Example output:
-
-```
-
-Action distribution:
-
-First Fit : 19
-Best Fit : 4954
-Worst Fit : 4
-Random Fit : 23
-
-```
-
-This reveals which allocator strategy the RL agent prefers.
-
----
-
-# 7. Generate Visualization Plots
-
-```
-
-python generate_plots.py
-
-```
-
-Plots generated:
-
-```
-
-plots/
-reward_curve.png
-kl_divergence.png
-value_loss.png
-fragmentation_comparison.png
-utilization_comparison.png
-policy_distribution.png
-
-```
-
----
-
-# RL Environment Design
-
-The memory allocator is formulated as a **Markov Decision Process (MDP)**.
-
-### State Representation
-
-The state vector contains:
-
-```
-
-[utilization,
-fragmentation,
-largest_free_block,
-num_free_blocks,
-request_size]
-
-```
-
-### Action Space
-
-The agent chooses among allocation strategies:
-
-```
-
-0 → First Fit
-1 → Best Fit
-2 → Worst Fit
-3 → Random Fit
-
-```
-
-### Reward Function
-
-The reward encourages efficient memory usage:
-
-```
-
-Reward = Utilization − Fragmentation − AllocationFailurePenalty
-
-```
-
----
-
-# Workload Types
-
-Three workload generators are used:
-
-### Uniform workload
-Random allocation sizes.
-
-### Bimodal workload
-Combination of small and large allocations.
-
-### Adversarial workload
-Designed to trigger fragmentation.
-
----
-
-# Results Summary
-
-| Method | Fragmentation | Utilization |
-|------|------|------|
-First Fit | 0.617 | 0.883 |
-Best Fit | 0.701 | 0.876 |
-Worst Fit | 0.896 | 0.765 |
-Random Fit | 0.868 | 0.852 |
-RL Agent | 0.843 | 0.900 |
-
----
-
-# Key Observations
-
-- The RL agent learns a policy that approximates the **Best Fit** heuristic.
-- RL adapts allocation strategy based on heap state.
-- Policy analysis shows **Best Fit selected in ~99% of decisions**.
-
----
-
-# Future Improvements
-
-Possible extensions:
-
-- richer state representation
-- mixed workload training
-- larger heap sizes
-- learning direct memory placement instead of heuristic selection
-
----
-
-# Author
-
-Sachin Mishra
-
-Research interest:  
+## Author
+**Sachin Mishra**  
 Reinforcement Learning • Systems Optimization • Machine Learning
-
-```
-

@@ -1,5 +1,5 @@
-from heap import Heap
-from allocator_strategies import first_fit, best_fit
+from core.heap import Heap
+from core.allocator_strategies import first_fit, best_fit
 
 heap = Heap(128)
 

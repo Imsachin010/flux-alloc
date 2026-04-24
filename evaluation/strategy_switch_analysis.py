@@ -1,8 +1,8 @@
 from stable_baselines3 import PPO
-from rl_env import MemoryEnv
+from core.rl_env import MemoryEnv
 import numpy as np
 
-model = PPO.load("rl_allocator")
+model = PPO.load("assets/rl_allocator")
 
 env = MemoryEnv()
 
