@@ -28,6 +28,7 @@ class DirectPlacementEnv:
         self.ptr = 0
         self.active_blocks = []
         self.block_age = {}
+        self.prev_largest = self.heap.largest_free_block()
 
         return self._get_state()
 
@@ -99,6 +100,8 @@ class DirectPlacementEnv:
 
         reward = 0
         done = False
+        allocation_failed = False
+        bad_split = False
 
         request = self.workload[self.ptr]
 
@@ -108,21 +111,22 @@ class DirectPlacementEnv:
             free_blocks = self.heap.free_blocks()
 
             if action >= len(free_blocks):
-                reward -= 5
+                allocation_failed = True
             else:
                 idx, block = free_blocks[action]
 
                 if block.size < size:
-                    reward -= 5
+                    allocation_failed = True
                 else:
                     remaining = block.size - size
-
-                    if 0 < remaining < 8:
-                        reward -= 1.5  # BAD SPLIT penalty
+                    if 0 < remaining < 16:
+                        bad_split = True
 
                     block_id = self.heap.allocate(idx, size)
 
-                    if block_id:
+                    if not block_id:
+                        allocation_failed = True
+                    else:
                         self.active_blocks.append(block_id)
 
         else:
@@ -153,9 +157,25 @@ class DirectPlacementEnv:
 
         reward /= 5.0  # normalization
 
+        # first-class: not diluted by global normalization
+        if request[0] == "malloc" and allocation_failed:
+            reward -= 2.0
+        if request[0] == "malloc" and bad_split and not allocation_failed:
+            reward -= 2.0
+
+        largest_after = self.heap.largest_free_block()
+        reward += 0.5 * (largest_after - self.prev_largest) / self.heap_size
+        self.prev_largest = largest_after
+
         self.ptr += 1
 
         if self.ptr >= len(self.workload):
             done = True
 
-        return self._get_state(), reward, done, {}
+        info: dict = {}
+        if request[0] == "malloc":
+            info["allocation_failed"] = bool(allocation_failed)
+        else:
+            info["allocation_failed"] = False
+
+        return self._get_state(), reward, done, info

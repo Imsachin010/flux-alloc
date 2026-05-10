@@ -40,6 +40,27 @@ def measure_best_fit_latency(heap_size, workload):
                 
     return np.mean(latencies), np.median(latencies), np.max(latencies)
 
+
+def measure_neural_ranker_forward_ms(iters: int = 2000) -> tuple[float, float, float]:
+    """Single 10D feature vector through Lookahead MLP (CPU, batch=1) — not full tree search."""
+    import torch
+    from lookahead.neural_ranker import NeuralRanker
+
+    m = NeuralRanker()
+    m.eval()
+    x = torch.randn(1, 10, dtype=torch.float32)
+    with torch.no_grad():
+        for _ in range(20):
+            m(x)
+    times = []
+    for _ in range(iters):
+        t0 = time.perf_counter()
+        with torch.no_grad():
+            m(x)
+        times.append((time.perf_counter() - t0) * 1000.0)
+    return float(np.mean(times)), float(np.median(times)), float(np.max(times))
+
+
 def measure_rl_latency(model, heap_size, workload):
     env = DirectPlacementEnv(heap_size=heap_size, episode_length=len(workload))
     state = env.reset()
@@ -100,10 +121,22 @@ def main():
     print(f"Median Latency: {rl_med:.4f} ms")
     print(f"Max Latency:    {rl_max:.4f} ms")
     
+    # 3. Lookahead MLP (ranker) — forward pass only, not O(cands × depth × copy)
+    rnk_mean, rnk_med, rnk_max = measure_neural_ranker_forward_ms()
+    print(f"\n[Lookahead ranker: MLP only, one forward, CPU]")
+    print(f"Mean Latency:   {rnk_mean:.4f} ms")
+    print(f"Median Latency: {rnk_med:.4f} ms")
+    print(f"Max Latency:    {rnk_max:.4f} ms")
+
     ratio = rl_mean / bf_mean if bf_mean > 0 else 0
+    ratio_rnk = rnk_mean / bf_mean if bf_mean > 0 else 0
     print("\n" + "-"*80)
-    print(f"Conclusion: Transformer Inference is approximately {ratio:.1f}x slower than Best Fit.")
-    print("This perfectly highlights the core academic tradeoff: Mathematical Efficiency vs Compute Time.")
+    print(
+        f"Conclusion: MaskablePPO+Transformer is ~{ratio:.1f}x slower per decision than Best Fit "
+        f"on this trace. The small ranker MLP alone is ~{ratio_rnk:.1f}x vs Best Fit. "
+        "Full Lookahead+Neural adds heap copies and simulated futures (orders of magnitude "
+        "more than Best Fit) when used as a planning pass."
+    )
     print("="*80 + "\n")
 
 if __name__ == "__main__":

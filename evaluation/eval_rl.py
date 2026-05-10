@@ -32,12 +32,8 @@ def evaluate():
         action_masks = env.get_action_mask()
         action, _ = model.predict(state, action_masks=action_masks)
         
-        # Track failures
-        prev_free = env.heap.total_free_memory()
-        state, reward, done, _ = env.step(action)
-        new_free = env.heap.total_free_memory()
-
-        if req[0] == "malloc" and new_free >= prev_free:
+        state, reward, done, info = env.step(action)
+        if req[0] == "malloc" and info.get("allocation_failed", False):
             failures += 1
 
         if done:
