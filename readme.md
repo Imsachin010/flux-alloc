@@ -6,11 +6,19 @@ Moving beyond traditional meta-allocators (which simply choose between heuristic
 
 ---
 
-## Key Architectural Upgrades
-- **Direct Placement Environment:** Formulated a custom MDP where the agent selects discrete block indices, moving beyond heuristic switching.
-- **Transformer Feature Extractor:** Employs a multi-head self-attention mechanism (`nn.TransformerEncoder`) to process a 128-dimensional state space encompassing both global metrics (Utilization, Fragmentation) and localized free-block embeddings (Age, Size, Position).
-- **Native Action Masking:** Integrates `sb3-contrib`'s `MaskablePPO` to dynamically restrict the policy from selecting invalid or non-existent free blocks, preventing fatal allocation errors during training.
-- **Advanced Reward Function:** A highly tuned, multi-objective reward structure that natively penalizes utilization loss, small fragment generation, and fragmentation density while rewarding largest block preservation.
+## Models
+
+This repository evaluates two distinct neural approaches against standard heuristics (Best-Fit, First-Fit, etc.), each serving a specific research objective:
+
+### 1. MaskablePPO (Transformer-Based Direct Placement)
+- **Description:** An end-to-end RL agent using a multi-head self-attention mechanism (`nn.TransformerEncoder`) to process a 128-dimensional state space (Utilization, Fragmentation, Age, Size, Position). It directly outputs the index of the memory block to allocate, natively masked by `sb3-contrib`'s `MaskablePPO` to ensure mathematical safety.
+- **Justification:** Explores whether a pure, reactive RL policy can natively learn spatial memory packing without relying on hardcoded heuristic rules. 
+- **Tradeoff:** Achieves generalization but suffers from extreme latency overhead (~500x slower than Best-Fit) due to the heavy inference cost of the Transformer on every single allocation step.
+
+### 2. Level-3 Lookahead + Neural Ranker (Hybrid Planning)
+- **Description:** A hybrid search-based allocator that blends a fast Neural Ranker (MLP) with a short-horizon simulation rollout (default depth = 12). It scores candidate blocks by simulating future allocations (using `lookahead_ranker.pt` with a 0.2 Neural / 0.8 Sim blend).
+- **Justification:** Designed to overcome the latency and sample-inefficiency of pure PPO. By looking into the future via simulation, it avoids the fragmentation traps that greedy heuristics and purely reactive RL agents fall into.
+- **Tradeoff:** Achieves **State-of-the-Art** efficiency on complex Bimodal workloads, while operating significantly faster than the heavy Transformer model (only ~8.7x Best-Fit latency).
 
 ---
 
@@ -102,14 +110,21 @@ Launch the MaskablePPO trainer with the custom Transformer.
 python -m training.train_direct_final
 ```
 
+### 7. Run Lookahead & Ablation Benchmarks
+Test the Level-3 Lookahead model against PPO and heuristics, or run the depth/blend ablation studies.
+```bash
+python -m lookahead.compare_final --workload bimodal --requests 1000
+python -m lookahead.ablation_bench --workload bimodal --requests 1000
+```
+
 ---
 
 ## Academic Results Summary
 
-Our findings from evaluating the Transformer-based RL agent:
-1. **Generalization Supremacy:** While Best-Fit barely edges out RL on standard uniform workloads, **MaskablePPO crushes Best-Fit on complex Bimodal workloads** (+0.212 vs +0.131 Efficiency Score).
-2. **Computational Cost:** The Transformer architecture provides superior mathematical memory packing but costs roughly **800x more CPU latency** per decision than traditional Best-Fit.
-3. **Behavioral Discovery:** By analyzing block selection preferences, we proved the agent develops targeted preferences (favoring smaller blocks to preserve large, contiguous gaps for the future).
+Based on our `EXPERIMENT_REPORT.md` benchmarks:
+1. **Lookahead Supremacy:** While Best-Fit edges out pure RL on simple uniform workloads, **Lookahead+Neural strictly dominates on complex Bimodal workloads** (achieving a +0.2266 Efficiency Score vs Best-Fit's +0.2046 and PPO's +0.0745), successfully pushing the Pareto optimal boundary.
+2. **Computational Cost (Math vs Compute):** The Transformer MaskablePPO model provides a proof-of-concept for direct placement but costs **~500x more CPU latency** than Best-Fit. In contrast, the Lookahead MLP Ranker offers a sweet spot, requiring only **~8.7x latency** while yielding the highest performance.
+3. **Synergy of Blended Planning:** Ablation studies prove that blending the Neural Ranker with simulation (0.2 / 0.8 ratio) at a Lookahead Depth of 12 produces synergistic results superior to using either method alone.
 
 ---
 
