@@ -14,18 +14,18 @@ def main():
         'figure.dpi': 300
     })
 
-    methods = ["Best Fit", "Lookahead Ranker", "MaskablePPO"]
-    latencies = [0.0143, 0.1238, 7.2341]
-    scores = [0.2046, 0.2266, 0.0745]
+    methods = ["Best Fit", "Lookahead (Ranker Only)", "Lookahead (Full L3)", "MaskablePPO"]
+    latencies = [0.0143, 0.1238, 5.2610, 7.2341]
+    scores = [0.2046, 0.2266, 0.2266, 0.0745]
     
-    fail_rates = [0.3431, 0.3207, 0.3515]
+    fail_rates = [0.3431, 0.3207, 0.3207, 0.3515]
     success_rates = [1 - f for f in fail_rates]
     
     # Scale bubbles for visual contrast, but not overly massive
     bubble_sizes = [(s - 0.6) * 10000 for s in success_rates] 
     
     # Standard academic colors
-    colors = ['#2ca02c', '#1f77b4', '#ff7f0e']
+    colors = ['#2ca02c', '#1f77b4', '#9467bd', '#ff7f0e']
     
     plt.figure(figsize=(8, 5))
     

@@ -124,13 +124,25 @@ class DirectPlacementEnv:
 
                     block_id = self.heap.allocate(idx, size)
 
-                    if not block_id:
+                    if block_id is None:
                         allocation_failed = True
                     else:
                         self.active_blocks.append(block_id)
 
         else:
-            if self.active_blocks:
+            target_size = request[1] if len(request) > 1 else None
+            if target_size is not None and self.active_blocks:
+                candidates = []
+                for b_id in self.active_blocks:
+                    for block in self.heap.blocks:
+                        if block.block_id == b_id and block.allocated and block.size == target_size:
+                            candidates.append(b_id)
+                            break
+                if candidates:
+                    b = random.choice(candidates)
+                    self.heap.free(b)
+                    self.active_blocks.remove(b)
+            elif self.active_blocks:
                 b = random.choice(self.active_blocks)
                 self.heap.free(b)
                 self.active_blocks.remove(b)

@@ -47,9 +47,22 @@ def _run_classic_with_largest(strategy_fn, heap_size, workload, seed: int = 42):
             else:
                 active.append(block_id)
         elif op == "free" and active:
-            block = random.choice(active)
-            heap.free(block)
-            active.remove(block)
+            target_size = request[1] if len(request) > 1 else None
+            if target_size is not None:
+                candidates = []
+                for b_id in active:
+                    for block in heap.blocks:
+                        if block.block_id == b_id and block.allocated and block.size == target_size:
+                            candidates.append(b_id)
+                            break
+                if candidates:
+                    block = random.choice(candidates)
+                    heap.free(block)
+                    active.remove(block)
+            else:
+                block = random.choice(active)
+                heap.free(block)
+                active.remove(block)
     util = Metrics.utilization(heap)
     frag = Metrics.external_fragmentation(heap)
     fail_rate = failures / total_malloc if total_malloc else 0.0
@@ -110,12 +123,18 @@ def main() -> None:
     )
     ap.add_argument(
         "--workload",
-        choices=("uniform", "bimodal"),
+        choices=("uniform", "bimodal", "adversarial"),
         default="uniform",
     )
     ap.add_argument("--requests", type=int, default=1000)
     ap.add_argument("--heap-size", type=int, default=1024)
     ap.add_argument("--lookahead", type=int, default=12)
+    ap.add_argument(
+        "--oracle",
+        choices=("best_fit", "first_fit", "next_fit"),
+        default="best_fit",
+        help="Oracle strategy for L3 Lookahead",
+    )
     ap.add_argument(
         "--no-ppo",
         action="store_true",
@@ -127,8 +146,10 @@ def main() -> None:
     gen = WorkloadGenerator(args.heap_size)
     if args.workload == "uniform":
         workload = gen.uniform_workload(args.requests)
-    else:
+    elif args.workload == "bimodal":
         workload = gen.bimodal_workload(args.requests)
+    else:
+        workload = gen.scaled_adversarial_workload(args.requests)
 
     hsz = args.heap_size
     rows: list[tuple[str, float, float, float, float, float]] = []
@@ -155,9 +176,10 @@ def main() -> None:
         workload,
         model_path=(_ROOT / "lookahead" / "lookahead_ranker.pt"),
         lookahead_steps=args.lookahead,
+        oracle_strategy=args.oracle,
     )
     u, f, fl, sc, lg = la
-    rows.append(("Lookahead+Neural", u, f, fl, sc, lg))
+    rows.append((f"Lookahead+Neural ({args.oracle})", u, f, fl, sc, lg))
 
     rows.sort(key=lambda x: x[4], reverse=True)
 

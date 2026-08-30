@@ -19,6 +19,7 @@ def run_lookahead_bench(
     neural_weight: float = 0.2,
     sim_weight: float = 0.8,
     seed: int = 42,
+    oracle_strategy: str = "best_fit",
 ) -> tuple[float, float, float, float, float]:
     """
     Returns (utilization, fragmentation, fail_rate, util - frag, largest_free / heap_size).
@@ -40,6 +41,7 @@ def run_lookahead_bench(
         lookahead_steps=lookahead_steps,
         neural_weight=neural_weight,
         sim_weight=sim_weight,
+        oracle_strategy=oracle_strategy,
     )
 
     failures = 0
@@ -57,7 +59,19 @@ def run_lookahead_bench(
                 if bid is not None:
                     active.append(bid)
         else:
-            if active:
+            target_size = req[1] if len(req) > 1 else None
+            if target_size is not None and active:
+                candidates = []
+                for b_id in active:
+                    for block in heap.blocks:
+                        if block.block_id == b_id and block.allocated and block.size == target_size:
+                            candidates.append(b_id)
+                            break
+                if candidates:
+                    b = random.choice(candidates)
+                    heap.free(b)
+                    active.remove(b)
+            elif active:
                 b = random.choice(active)
                 heap.free(b)
                 active.remove(b)

@@ -18,6 +18,7 @@ class Heap:
         self.heap_size = heap_size
         self.blocks = [Block(0, heap_size, allocated=False)]
         self.id_counter = itertools.count()
+        self.last_allocated_addr = 0
 
     # ---------------------------------
     # Core allocation method
@@ -35,6 +36,7 @@ class Heap:
         block.size = request_size
         block.allocated = True
         block.block_id = block_id
+        self.last_allocated_addr = block.start
 
         if remaining > 0:
             new_block = Block(block.start + request_size, remaining, allocated=False)
@@ -110,3 +112,4 @@ class Heap:
 
         self.blocks = [Block(0, self.heap_size, allocated=False)]
         self.id_counter = itertools.count()
+        self.last_allocated_addr = 0

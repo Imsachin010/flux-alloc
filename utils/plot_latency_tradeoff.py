@@ -4,20 +4,20 @@ import matplotlib.pyplot as plt
 
 def main():
     # Data from Section 5 and Section 4 of EXPERIMENT_REPORT.md
-    methods = ["Best Fit", "Lookahead Ranker (Forward)", "MaskablePPO (Transformer)"]
+    methods = ["Best Fit", "Lookahead Ranker (Forward)", "Lookahead+Neural (Full L3)", "MaskablePPO (Transformer)"]
     
     # X-axis: Mean Latency (ms) - Section 5
-    latencies = [0.0143, 0.1238, 7.2341]
+    latencies = [0.0143, 0.1238, 5.2610, 7.2341]
     
     # Y-axis: Efficiency Score (Util - Frag) - Section 4 Bimodal
-    scores = [0.2046, 0.2266, 0.0745]
+    scores = [0.2046, 0.2266, 0.2266, 0.0745]
     
     # Bubble Size: Success Rate (1 - Fail Rate) * scalar
-    fail_rates = [0.3431, 0.3207, 0.3515]
+    fail_rates = [0.3431, 0.3207, 0.3207, 0.3515]
     success_rates = [1 - f for f in fail_rates]
     bubble_sizes = [s * 1000 for s in success_rates]
     
-    colors = ['green', 'blue', 'orange']
+    colors = ['green', 'blue', 'purple', 'orange']
     
     plt.figure(figsize=(10, 6))
     

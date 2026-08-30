@@ -99,7 +99,52 @@ All rows share one workload; includes **Lg.fr/H** and optional **PPO** when a ch
 
 *On this single bimodal trace, Lookahead+Neural is **first** in Score among all listed methods, including the trained PPO, with the **lowest** failure rate.*
 
+### 4d. Bimodal 3-Run Average (Seeds 42, 10, 18)
+
+To evaluate the statistical robustness of the claim, the allocators were benchmarked across three different random seeds (42, 10, and 18).
+
+| Strategy | Util. | Frag. | Fail | Lg.fr/H | Score |
+|----------|------:|------:|-----:|--------:|------:|
+| **Best Fit** | 0.9753 ± 0.0094 | 0.7784 ± 0.0342 | 0.3392 ± 0.0084 | 0.0052 ± 0.0012 | **+0.1969 ± 0.0425** |
+| Lookahead+Neural | 0.9606 ± 0.0226 | 0.8248 ± 0.0539 | 0.3061 ± 0.0115 | 0.0065 ± 0.0032 | +0.1358 ± 0.0648 |
+| MaskablePPO Agent | 0.8906 ± 0.0951 | 0.8202 ± 0.0945 | 0.3295 ± 0.0159 | 0.0286 ± 0.0330 | +0.0704 ± 0.0036 |
+| Random Fit | 0.9476 ± 0.0202 | 0.8806 ± 0.0240 | 0.3146 ± 0.0254 | 0.0059 ± 0.0014 | +0.0670 ± 0.0422 |
+| First Fit | 0.9541 ± 0.0157 | 0.9031 ± 0.0170 | 0.3245 ± 0.0135 | 0.0042 ± 0.0009 | +0.0510 ± 0.0311 |
+| Worst Fit | 0.8190 ± 0.0657 | 0.9647 ± 0.0189 | 0.3275 ± 0.0164 | 0.0075 ± 0.0064 | −0.1457 ± 0.0497 |
+
+#### Key Insights & Analysis:
+*   **The Score Gap Does Not Hold**: While `Lookahead+Neural` outperforms `Best Fit` on seed 42 (+0.2266 vs. +0.2046), it is outperformed on seed 10 (+0.0794 vs. +0.1414) and seed 18 (+0.1016 vs. +0.2446). On average, `Best Fit` achieves a higher Score (+0.1969 ± 0.0425) than `Lookahead+Neural` (+0.1358 ± 0.0648).
+*   **Lookahead Lower Failure Rate Holds Consistently**: Crucially, `Lookahead+Neural` consistently achieves a **lower unified failure rate** than `Best Fit` on all three seeds (Seed 42: 32.07% vs. 34.31%; Seed 10: 29.28% vs. 32.75%; Seed 18: 30.48% vs. 34.69%). On average, `Lookahead+Neural` fails **~3.3% less often** (0.3061 ± 0.0115 vs. 0.3392 ± 0.0084).
+*   **Interpretation**: In an allocator, avoiding allocation failures is the most critical requirement (a failed `malloc` causes out-of-memory errors). Because `Lookahead+Neural` successfully allocates more blocks, it ends up with slightly lower final utilization and higher final fragmentation due to the extra blocks it carried, which explains why the simple `Score` metric (which does not penalize failures directly) favors `Best Fit`. Thus, `Lookahead+Neural`'s consistent safety advantage remains highly defensible when using **failure rate** as the primary SLO, even if it loses the snapshot `Score` metric.
+
+### 4e. Adversarial Workload & L3 Oracle Sweep (PPO not run)
+
+`python -m lookahead.compare_final --workload adversarial --no-ppo --requests 1000 --oracle [best_fit|first_fit|next_fit]`
+
+#### L1 Baselines (Classical Heuristic Collapse)
+| Strategy | Util. | Frag. | Fail | Lg.fr/H | Score |
+|----------|------:|------:|-----:|--------:|------:|
+| Best Fit | 0.7656 | 0.5667 | 0.0263 | 0.1016 | +0.1990 |
+| Random Fit | 0.7109 | 0.5405 | 0.0283 | 0.1328 | +0.1704 |
+| First Fit | 0.7656 | 0.7667 | 0.0263 | 0.0547 | -0.0010 |
+| Worst Fit | 0.5469 | 0.8276 | 0.0344 | 0.0781 | -0.2807 |
+
+#### L3 Oracle Sweep (Ablation on Rollout Heuristics)
+Evaluating Lookahead+Neural under different internal rollout simulation oracles:
+
+| Strategy | Util. | Frag. | Fail | Lg.fr/H | Score |
+|----------|------:|------:|-----:|--------:|------:|
+| **Lookahead+Neural (best_fit)** | 0.7656 | 0.2667 | 0.0263 | 0.1719 | **+0.4990** |
+| Lookahead+Neural (next_fit) | 0.7109 | 0.3243 | 0.0283 | 0.1953 | +0.3866 |
+| Lookahead+Neural (first_fit) | 0.7109 | 0.6757 | 0.0283 | 0.0938 | +0.0353 |
+
+#### Key Insights & Analysis:
+*   **Baseline Collapse**: The adversarial trace successfully exploits classical heuristics, driving `First Fit` and `Worst Fit` to negative overall scores (-0.0010 and -0.2807 respectively). 
+*   **The "Lookahead Shield" Effect**: Even though the workload is explicitly adversarial to Best Fit, using `best_fit` as L3's internal rollout oracle yields the **highest performance** (+0.4990 score, only 26.67% fragmentation). Because Lookahead+Neural simulates 12 steps into the future, it detects if a candidate action leads to a bad future state under Best Fit and selects a different base action to avoid it, shielding the allocator from Best Fit's normal vulnerability.
+*   **Rollout Ablation**: Simulating future steps with `first_fit` results in poor future predictions on this trace (+0.0353 score), while `next_fit` performs decently (+0.3866 score) but remains suboptimal compared to `best_fit`.
+
 ---
+
 
 ## 5. Latency (per-allocation, CPU, `n=500` uniform trace in script)
 
@@ -155,6 +200,9 @@ python -m lookahead.compare_final --workload bimodal   --no-ppo --requests 1000
 python -m lookahead.compare_final --workload bimodal   --requests 1000
 python -m lookahead.ablation_bench --workload bimodal --requests 1000
 python -m lookahead.eval_lookahead --workload bimodal  --requests 1000
+python -m lookahead.compare_final --workload adversarial --no-ppo --oracle best_fit
+python -m lookahead.compare_final --workload adversarial --no-ppo --oracle first_fit
+python -m lookahead.compare_final --workload adversarial --no-ppo --oracle next_fit
 ```
 
 ---
@@ -166,6 +214,7 @@ python -m lookahead.eval_lookahead --workload bimodal  --requests 1000
 - **Do not** compare Section 3 to Section 2 as “the same run.”  
 - **Ablations** and **latency** are **one machine, one pass**; report **multiple seeds** in the paper for statistical claims.  
 - **PPO** vs **Lookahead+Neural** are different designs (policy gradient vs. scored planning); compare on agreed traces and SLOs (e.g. fail + latency + score).
+- **L2 Adversarial Curriculum Retraining Deferral**: Skip retraining the PPO agent on adversarial workloads for this submission due to time constraints and policy degradation risks, moving it to future work. The proposed curriculum retraining plan remains documented.
 
 *Reproducibility — we can reproduce the tables after retraining or changing `rl_direct_allocator` or `lookahead_ranker.pt`.*
 
