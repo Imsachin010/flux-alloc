@@ -34,6 +34,7 @@ MANIFEST
 
 # Virtual Environments
 fluxAlloc/
+.fluxalloc/
 venv/
 env/
 ENV/
