@@ -1,0 +1,14 @@
+config: D-freepol
+workload: bimodal
+seed: 42
+strategy: FluxAlloc (free=LIFO)
+util: 0.9746
+frag: 0.8846
+fail: 0.3305
+lgfr: 0.0029
+score: +0.0900
+hit: 0.6695
+miss: 0.3305
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

@@ -1,0 +1,14 @@
+config: B-h4
+workload: bimodal
+seed: 0
+strategy: FluxAlloc
+util: 0.9482
+frag: 0.8208
+fail: 0.0988
+lgfr: 0.0093
+score: +0.1275
+hit: 0.9012
+miss: 0.0988
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

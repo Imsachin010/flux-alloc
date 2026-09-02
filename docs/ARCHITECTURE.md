@@ -21,7 +21,7 @@ Traditional RL allocators function as "Meta-Allocators," merely selecting betwee
 
 ---
 
-## 2. Level-3 Lookahead + Neural Ranker (Hybrid Planning)
+## 2. Level-2 Lookahead + Neural Ranker (Hybrid Planning)
 
 While pure PPO provides excellent generalization, its reactive nature and heavy inference latency (~500x slower than Best-Fit) make it computationally expensive. To bridge the gap between "dumb but fast heuristics" and "smart but slow neural networks," we designed the **Level-3 Lookahead Neural Ranker**.
 

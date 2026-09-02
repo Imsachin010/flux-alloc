@@ -1,0 +1,14 @@
+config: A-bim-s42
+workload: bimodal
+seed: 42
+strategy: First Fit
+util: 0.9570
+frag: 0.8864
+fail: 0.3417
+lgfr: 0.0049
+score: +0.0707
+hit: 0.6583
+miss: 0.3417
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

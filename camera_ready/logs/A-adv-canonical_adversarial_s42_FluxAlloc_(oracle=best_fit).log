@@ -1,0 +1,14 @@
+config: A-adv-canonical
+workload: adversarial
+seed: 42
+strategy: FluxAlloc (oracle=best_fit)
+util: 0.7656
+frag: 0.2667
+fail: 0.0263
+lgfr: 0.1719
+score: +0.4990
+hit: 0.9737
+miss: 0.0263
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

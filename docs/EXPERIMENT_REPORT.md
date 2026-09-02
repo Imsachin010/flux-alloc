@@ -219,7 +219,7 @@ python -m lookahead.compare_final --workload adversarial --no-ppo --oracle next_
 *Reproducibility — we can reproduce the tables after retraining or changing `rl_direct_allocator` or `lookahead_ranker.pt`.*
 
 ---
-<!-- 
+
 ## 9. Contributors
 
 **Contributors:**
@@ -231,4 +231,4 @@ python -m lookahead.compare_final --workload adversarial --no-ppo --oracle next_
 International Institute of Information Technology (IIIT), Bengaluru
 
 **License:**  
-This project is licensed under the **MIT License**. -->
+This project is licensed under the **MIT License**.

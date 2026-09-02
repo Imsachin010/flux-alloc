@@ -19,6 +19,9 @@ class LookaheadAllocator:
         neural_weight: float = _NEURAL_W,
         sim_weight: float = _SIM_W,
         oracle_strategy: str = "best_fit",
+        free_policy: str = "FIFO",
+        mismatched_hypothesis: bool = False,
+        scale: int = 1,
     ):
 
         self.heap_size = heap_size
@@ -26,6 +29,9 @@ class LookaheadAllocator:
         self.neural_weight = neural_weight
         self.sim_weight = sim_weight
         self.oracle_strategy = oracle_strategy
+        self.free_policy = free_policy
+        self.mismatched_hypothesis = mismatched_hypothesis
+        self.scale = scale
         self.model = NeuralRanker()
 
         if model_path:
@@ -102,6 +108,9 @@ class LookaheadAllocator:
                     active_block_ids,
                     self.lookahead_steps,
                     oracle_strategy=self.oracle_strategy,
+                    free_policy=self.free_policy,
+                    mismatched_hypothesis=self.mismatched_hypothesis,
+                    scale=self.scale,
                 )
                 # Blend: simulation is the primary "future-safe" signal.
                 tscore = self.neural_weight * nscore + self.sim_weight * sim

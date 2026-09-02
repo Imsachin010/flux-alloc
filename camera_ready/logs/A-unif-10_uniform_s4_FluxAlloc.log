@@ -1,0 +1,14 @@
+config: A-unif-10
+workload: uniform
+seed: 4
+strategy: FluxAlloc
+util: 0.8770
+frag: 0.7937
+fail: 0.4589
+lgfr: 0.0254
+score: +0.0833
+hit: 0.5411
+miss: 0.4589
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

@@ -1,0 +1,14 @@
+config: A-bim-s42
+workload: bimodal
+seed: 42
+strategy: Worst Fit
+util: 0.8877
+frag: 0.9739
+fail: 0.3459
+lgfr: 0.0029
+score: -0.0862
+hit: 0.6541
+miss: 0.3459
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

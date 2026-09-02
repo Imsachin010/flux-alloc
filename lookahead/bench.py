@@ -20,6 +20,9 @@ def run_lookahead_bench(
     sim_weight: float = 0.8,
     seed: int = 42,
     oracle_strategy: str = "best_fit",
+    free_policy: str = "FIFO",
+    mismatched_hypothesis: bool = False,
+    scale: int = 1,
 ) -> tuple[float, float, float, float, float]:
     """
     Returns (utilization, fragmentation, fail_rate, util - frag, largest_free / heap_size).
@@ -42,6 +45,9 @@ def run_lookahead_bench(
         neural_weight=neural_weight,
         sim_weight=sim_weight,
         oracle_strategy=oracle_strategy,
+        free_policy=free_policy,
+        mismatched_hypothesis=mismatched_hypothesis,
+        scale=scale,
     )
 
     failures = 0

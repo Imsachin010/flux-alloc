@@ -1,0 +1,47 @@
+cff-version: 1.2.0
+message: "If you use FluxAlloc in your research, please cite this work."
+
+title: "FluxAlloc: Adaptive Dynamic Memory Allocation"
+type: software
+
+authors:
+  - family-names: Mishra
+    given-names: Sachin
+    affiliation: "International Institute of Information Technology Bangalore"
+  - family-names: Soni
+    given-names: Lomesh
+    affiliation: "International Institute of Information Technology Bangalore"
+  - family-names: Gotmare
+    given-names: Abhay
+    affiliation: "International Institute of Information Technology Bangalore"
+
+version: "1.0.0"
+date-released: 2026-08-30
+
+repository-code: "https://github.com/Imsachin010/flux-alloc"
+
+license: MIT
+
+keywords:
+  - dynamic memory allocation
+  - reinforcement learning
+  - proximal policy optimization
+  - lookahead planning
+  - heap fragmentation
+  - learned systems
+  - memory management
+
+references:
+  - type: conference-paper
+    title: "FluxAlloc: Adaptive Dynamic Memory Allocation"
+    authors:
+      - family-names: Mishra
+        given-names: Sachin
+      - family-names: Soni
+        given-names: Lomesh
+      - family-names: Gotmare
+        given-names: Abhay
+    year: 2026
+    collection-title: "2026 IEEE International Conference on Data Science and Advanced Analytics (DSAA)"
+    conference:
+      name: "IEEE International Conference on Data Science and Advanced Analytics"

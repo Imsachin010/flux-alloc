@@ -1,0 +1,14 @@
+config: B-unif-h4
+workload: uniform
+seed: 7
+strategy: Best Fit
+util: 0.9309
+frag: 0.8940
+fail: 0.3531
+lgfr: 0.0073
+score: +0.0369
+hit: 0.6469
+miss: 0.3531
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

@@ -1,0 +1,14 @@
+config: A-bim-10
+workload: bimodal
+seed: 18
+strategy: FluxAlloc
+util: 0.9766
+frag: 0.8750
+fail: 0.3048
+lgfr: 0.0029
+score: +0.1016
+hit: 0.6952
+miss: 0.3048
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

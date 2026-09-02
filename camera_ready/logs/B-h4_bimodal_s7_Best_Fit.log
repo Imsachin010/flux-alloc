@@ -1,0 +1,14 @@
+config: B-h4
+workload: bimodal
+seed: 7
+strategy: Best Fit
+util: 0.9946
+frag: 0.0000
+fail: 0.1392
+lgfr: 0.0054
+score: +0.9946
+hit: 0.8608
+miss: 0.1392
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

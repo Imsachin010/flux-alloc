@@ -1,8 +1,9 @@
-"""Short rollouts on a heap copy: future workload + best-fit mallocs, FIFO frees."""
+"""Short rollouts on a heap copy: future workload + oracle mallocs, configurable frees."""
 
 from __future__ import annotations
 
 import copy
+import random
 
 from core.allocator_strategies import best_fit, first_fit, next_fit
 from core.metrics import Metrics
@@ -21,11 +22,14 @@ def simulate_after_malloc(
     active_block_ids: list,
     lookahead_steps: int,
     oracle_strategy: str = "best_fit",
+    free_policy: str = "FIFO",
+    mismatched_hypothesis: bool = False,
+    scale: int = 1,
 ) -> float:
     """
     After hypothetically placing the current malloc at `free_index`, run up to
     `lookahead_steps` *future* workload ops (from request_ptr+1) on a heap copy.
-    Future mallocs use best-fit; frees pop FIFO from active alloc list.
+    Future mallocs use oracle_strategy; frees pop per free_policy from active alloc list.
     Returns a scalar score (higher = better expected future state).
     """
     h = copy.deepcopy(heap)
@@ -54,7 +58,13 @@ def simulate_after_malloc(
             else:
                 strategy_fn = best_fit
 
-            r = strategy_fn(h, w[1])
+            if mismatched_hypothesis:
+                # Perturb peeked size with canonical alternating 8/56 cycle
+                fut_size = (8 * scale) if (t % 2 == 1) else (56 * scale)
+            else:
+                fut_size = w[1]
+
+            r = strategy_fn(h, fut_size)
             if r is None:
                 failures += 1
             else:
@@ -75,7 +85,12 @@ def simulate_after_malloc(
                     act.remove(found_b)
             else:
                 if act:
-                    b = act.pop(0)
+                    if free_policy == "LIFO":
+                        b = act.pop(-1)
+                    elif free_policy == "random":
+                        b = act.pop(random.randrange(len(act)))
+                    else:  # FIFO (default)
+                        b = act.pop(0)
                     h.free(b)
 
     base = outcome_score(h)

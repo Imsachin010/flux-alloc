@@ -1,0 +1,14 @@
+config: A-latency
+workload: uniform
+seed: 42
+strategy: Best Fit
+util: 0.8340
+frag: 0.6765
+fail: 0.4444
+lgfr: 0.0537
+score: +0.1575
+hit: 0.5556
+miss: 0.4444
+lat_mean_ms: 0.0087
+lat_med_ms: 0.0076
+lat_max_ms: 0.0365

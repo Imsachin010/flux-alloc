@@ -1,0 +1,14 @@
+config: A-unif-10
+workload: uniform
+seed: 3
+strategy: Best Fit
+util: 0.8057
+frag: 0.7789
+fail: 0.5426
+lgfr: 0.0430
+score: +0.0268
+hit: 0.4574
+miss: 0.5426
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

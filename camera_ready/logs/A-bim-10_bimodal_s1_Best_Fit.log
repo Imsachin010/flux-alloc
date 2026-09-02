@@ -1,0 +1,14 @@
+config: A-bim-10
+workload: bimodal
+seed: 1
+strategy: Best Fit
+util: 0.9541
+frag: 0.7234
+fail: 0.3583
+lgfr: 0.0127
+score: +0.2307
+hit: 0.6417
+miss: 0.3583
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

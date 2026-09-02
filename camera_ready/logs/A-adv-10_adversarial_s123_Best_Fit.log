@@ -1,0 +1,14 @@
+config: A-adv-10
+workload: adversarial
+seed: 123
+strategy: Best Fit
+util: 0.6328
+frag: 0.5106
+fail: 0.0777
+lgfr: 0.1797
+score: +0.1222
+hit: 0.9223
+miss: 0.0777
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

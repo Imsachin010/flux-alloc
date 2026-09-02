@@ -1,0 +1,14 @@
+config: A-latency
+workload: uniform
+seed: 42
+strategy: FluxAlloc Full Planning
+util: 0.8105
+frag: 0.8093
+fail: 0.4416
+lgfr: 0.0361
+score: +0.0013
+hit: 0.5584
+miss: 0.4416
+lat_mean_ms: 4.4785
+lat_med_ms: 1.2605
+lat_max_ms: 37.9817

@@ -1,0 +1,14 @@
+config: A-unif-s42
+workload: uniform
+seed: 42
+strategy: Baseline PPO
+util: 0.8926
+frag: 0.7091
+fail: 0.5191
+lgfr: 0.0312
+score: +0.1835
+hit: 0.4809
+miss: 0.5191
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

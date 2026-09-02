@@ -1,0 +1,14 @@
+config: C-rand
+workload: adversarial_rand
+seed: 3
+strategy: FluxAlloc (matched)
+util: 0.9854
+frag: 0.6667
+fail: 0.9476
+lgfr: 0.0049
+score: +0.3187
+hit: 0.0524
+miss: 0.9476
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

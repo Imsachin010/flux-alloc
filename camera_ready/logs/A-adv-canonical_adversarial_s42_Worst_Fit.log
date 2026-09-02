@@ -1,0 +1,14 @@
+config: A-adv-canonical
+workload: adversarial
+seed: 42
+strategy: Worst Fit
+util: 0.5469
+frag: 0.8276
+fail: 0.0344
+lgfr: 0.0781
+score: -0.2807
+hit: 0.9656
+miss: 0.0344
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

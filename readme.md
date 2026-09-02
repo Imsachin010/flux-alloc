@@ -1,133 +1,170 @@
-# FluxAlloc: Transformer-Based Reinforcement Learning Memory Allocator
+# FluxAlloc: Adaptive Dynamic Memory Allocation
 
-FluxAlloc is an advanced research project exploring the use of **Reinforcement Learning (RL)** to solve dynamic memory allocation natively. 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
+[![Conference](https://img.shields.io/badge/IEEE%20DSAA-2026-blue)](https://dsaa2026.dsaa.co/)
 
-Moving beyond traditional meta-allocators (which simply choose between heuristics like Best-Fit or First-Fit), FluxAlloc implements a **Direct Memory Placement** strategy. It utilizes a **Transformer Feature Extractor** to analyze the memory heap in real-time and explicitly selects the exact free block to allocate, natively masked by `MaskablePPO` to ensure mathematical safety.
+**FluxAlloc** is an adaptive dynamic memory allocation framework designed to mitigate external heap fragmentation in memory-constrained systems. Moving beyond traditional meta-allocators (which heuristically switch between classical rules like Best-Fit or First-Fit), FluxAlloc implements:
 
----
-
-## Models
-
-This repository evaluates two distinct neural approaches against standard heuristics (Best-Fit, First-Fit, etc.), each serving a specific research objective:
-
-### 1. MaskablePPO (Transformer-Based Direct Placement)
-- **Description:** An end-to-end RL agent using a multi-head self-attention mechanism (`nn.TransformerEncoder`) to process a 128-dimensional state space (Utilization, Fragmentation, Age, Size, Position). It directly outputs the index of the memory block to allocate, natively masked by `sb3-contrib`'s `MaskablePPO` to ensure mathematical safety.
-- **Justification:** Explores whether a pure, reactive RL policy can natively learn spatial memory packing without relying on hardcoded heuristic rules. 
-- **Tradeoff:** Achieves generalization but suffers from extreme latency overhead (~500x slower than Best-Fit) due to the heavy inference cost of the Transformer on every single allocation step.
-
-### 2. Level-3 Lookahead + Neural Ranker (Hybrid Planning)
-- **Description:** A hybrid search-based allocator that blends a fast Neural Ranker (MLP) with a short-horizon simulation rollout (default depth = 12). It scores candidate blocks by simulating future allocations (using `lookahead_ranker.pt` with a 0.2 Neural / 0.8 Sim blend).
-- **Justification:** Designed to overcome the latency and sample-inefficiency of pure PPO. By looking into the future via simulation, it avoids the fragmentation traps that greedy heuristics and purely reactive RL agents fall into.
-- **Tradeoff:** Achieves **State-of-the-Art** efficiency on complex Bimodal workloads, while operating significantly faster than the heavy Transformer model (only ~8.7x Best-Fit latency).
+1. **Direct Memory Placement (MaskablePPO)**: An end-to-end Reinforcement Learning (RL) agent utilizing a **Transformer Feature Extractor** to process heap block geometry in real time and directly select allocation targets under strict action masking.
+2. **Hybrid Lookahead Planning (FluxAlloc Ranker)**: A high-efficiency planning allocator that blends a 10-dimensional **Neural Ranker (MLP)** with short-horizon simulation rollouts ($k=12$), avoiding fragmentation traps with minimal latency overhead.
 
 ---
 
-## Project Structure (Modular Clean Architecture)
+## Repository Structure
 
 ```text
 flux-alloc/
-├── core/
-│   ├── heap.py
-│   ├── rl_env_direct_final.py  # The Direct Placement MDP Env
-│   ├── allocator_strategies.py
-│   ├── workload_generator.py
-│   └── metrics.py
-├── policy/
-│   └── custom_policy_transformer.py # Transformer Neural Network
-├── training/
-│   ├── train_direct_final.py
-│   └── train_agent.py
-├── evaluation/
-│   ├── compare_allocators.py   # Main Fairness Benchmark
-│   ├── eval_rl.py              # Fast RL Evaluation
-│   ├── eval_latency.py         # CPU vs Memory Tradeoff
-│   └── eval_rl_generalization.py # Robustness Checks
-├── utils/
-│   ├── plot_training.py
-│   ├── plot_block_preference.py # Visualizes Agent Psychology
-│   └── plot_pareto_tradeoff.py  # Generates Pareto optimal visualizations
-└── assets/
-    ├── rl_direct_allocator.zip # Saved Model
-    └── ... (Generated plots, graphs, and logs)
+├── LICENSE                   # MIT License
+├── CITATION.cff              # Machine-readable citation metadata
+├── CITATION.bib              # BibTeX citation entry
+├── THIRD_PARTY_NOTICES.md    # Upstream software and dependency notices
+├── CHANGELOG.md              # Project version history
+├── CONTRIBUTING.md           # Development and contribution guidelines
+├── CODE_OF_CONDUCT.md        # Contributor Covenant Code of Conduct
+├── requirements.txt          # Python package dependencies
+│
+├── core/                     # Heap simulation, heuristics, and MDP environment
+│   ├── heap.py               # Heap memory model, block splitting, and coalescing
+│   ├── allocator_strategies.py # Classical heuristics (Best-Fit, First-Fit, etc.)
+│   ├── rl_env_direct_final.py # Gymnasium Direct Placement MDP environment
+│   ├── workload_generator.py # Workload generators (Uniform, Bimodal, Adversarial)
+│   └── metrics.py            # Utilization and external fragmentation metrics
+│
+├── lookahead/                # Lookahead planning & Neural Ranker
+│   ├── lookahead_allocator.py # Hybrid Lookahead allocator
+│   ├── lookahead_sim.py      # Rollout simulation engine
+│   ├── neural_ranker.py      # 10-feature MLP ranker network
+│   ├── train_ranker.py       # Supervised ranker training harness
+│   └── bench.py              # Single-pass lookahead benchmark
+│
+├── policy/                   # Neural network architectures
+│   └── custom_policy_transformer.py # Multi-head attention policy extractor
+│
+├── camera_ready/             # Camera-ready experimental regeneration suite
+│   ├── run_experiments.py    # Master runner for Batches A, B, C, D
+│   ├── compute_stats.py      # Wilcoxon tests & bootstrap CI computations
+│   ├── trace_audit.py        # SHA-256 trace verification audit
+│   ├── trace_manifest.csv    # SHA-256 hash manifest per (workload, seed)
+│   ├── results.csv           # Unified benchmark output records
+│   ├── stats.md              # Statistical significance report
+│   ├── RESULTS.md            # Detailed per-batch tables & token values
+│   └── DELTA.md              # New vs paper-current delta tracking
+│
+├── paper_plots/              # Publication figures and plotting scripts (>= 300 DPI)
+│   ├── generate_all.py       # Master script regenerating all 6 paper figures
+│   └── ...                   # Individual figure generation scripts
+│
+├── docs/                     # Extended documentation
+│   ├── REPRODUCIBILITY.md    # Detailed reproduction protocol & seed specs
+│   ├── ARCHITECTURE.md       # Technical design and subsystem architecture
+│   └── EXPERIMENT_REPORT.md  # Comprehensive experimental analysis
+│
+└── traces/                   # Checksums and trace manifests
+    └── SHA256SUMS            # Workload trace SHA-256 checksums
 ```
 
 ---
 
-## Installation
+## Getting Started
 
-Create and activate a Python environment (Windows):
+### 1. Installation
+
+Create and activate a virtual environment:
 ```bash
+# Clone repository
+git clone https://github.com/Imsachin010/flux-alloc.git
+cd flux-alloc
+
+# Create virtual environment
 python -m venv fluxAlloc
-fluxAlloc\Scripts\activate
-```
 
-Install dependencies:
-```bash
-python -m pip install -r requirements.txt
+# Activate environment (Windows)
+.\fluxAlloc\Scripts\activate
+# Activate environment (Linux/macOS)
+# source fluxAlloc/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
 ```
 
 ---
 
-## Running the Project
+## Reproducing Paper Results
 
-Because the repository is organized into a clean Python module structure, you must run scripts using the `-m` flag from the root directory.
+All experimental runs are completely deterministic and paired across evaluation seeds $S = \{0, 1, 2, 3, 4, 7, 10, 18, 42, 123\}$.
 
-### 1. The Ultimate Benchmark (Apples-to-Apples Comparison)
-Run a heavily seeded, identically-matched workload sequence against Best-Fit, First-Fit, Worst-Fit, Random-Fit, and your trained MaskablePPO Agent.
+### 1. Run All Experiment Batches
+Execute Batches A (core benchmarks & latency), B (scale $\times 64$ & headroom), C (randomized adversarial & mismatched oracle), and D (free-policy sensitivity):
 ```bash
-python -m evaluation.compare_allocators
+python camera_ready/run_experiments.py
+```
+Outputs are written to `camera_ready/results.csv` and logged to `camera_ready/logs/`.
+
+### 2. Compute Statistical Tests
+Compute paired two-sided Wilcoxon signed-rank tests and 10,000-resample bootstrap 95% confidence intervals:
+```bash
+python camera_ready/compute_stats.py
+```
+Summary report is generated in `camera_ready/stats.md`.
+
+### 3. Regenerate Publication Figures
+Regenerate all publication-ready figures in `paper_plots/`:
+```bash
+python -m paper_plots.generate_all
 ```
 
-### 2. Fast RL Agent Evaluation
-Quickly evaluate the agent's performance on a single fixed sequence.
+For detailed experimental specifications and workload parameters, refer to [docs/REPRODUCIBILITY.md](docs/REPRODUCIBILITY.md).
+
+---
+
+## Running Individual Modules
+
+### Classical Heuristic vs Lookahead Benchmark
 ```bash
-python -m evaluation.eval_rl
+python -m lookahead.compare_final --workload bimodal --requests 1000
 ```
 
-### 3. CPU vs Memory Latency Tradeoff
-Prove the exact execution time cost (in milliseconds) of using a Neural Network over a standard heuristic `for-loop`.
+### Hyperparameter Ablation Benchmarks
 ```bash
-python -m evaluation.eval_latency
+python -m lookahead.ablation_bench --workload bimodal --requests 1000
 ```
 
-### 4. Generalization / Robustness
-Test how the RL agent handles unexpected situations, such as heavy Bimodal and Adversarial workloads.
-```bash
-python -m evaluation.eval_rl_generalization
-```
-
-### 5. Generate Visualizations & Graphs
-To regenerate the specific `.png` graphs used in the report:
-```bash
-python -m utils.plot_pareto_tradeoff
-python -m utils.plot_block_preference
-python -m utils.plot_training
-```
-
-### 6. Train the Agent from Scratch
-Launch the MaskablePPO trainer with the custom Transformer.
+### Direct Placement PPO Training
 ```bash
 python -m training.train_direct_final
 ```
 
-### 7. Run Lookahead & Ablation Benchmarks
-Test the Level-3 Lookahead model against PPO and heuristics, or run the depth/blend ablation studies.
-```bash
-python -m lookahead.compare_final --workload bimodal --requests 1000
-python -m lookahead.ablation_bench --workload bimodal --requests 1000
+---
+
+## Citation
+
+If you use FluxAlloc in your research, please cite our paper:
+
+```bibtex
+@inproceedings{mishra2026fluxalloc,
+  title        = {FluxAlloc: Adaptive Dynamic Memory Allocation},
+  author       = {Mishra, Sachin and Soni, Lomesh and Gotmare, Abhay},
+  booktitle    = {2026 IEEE International Conference on Data Science and Advanced Analytics (DSAA)},
+  year         = {2026},
+  organization = {IEEE}
+}
 ```
 
----
-
-## Academic Results Summary
-
-Based on our `EXPERIMENT_REPORT.md` benchmarks:
-1. **Lookahead Supremacy:** While Best-Fit edges out pure RL on simple uniform workloads, **Lookahead+Neural strictly dominates on complex Bimodal workloads** (achieving a +0.2266 Efficiency Score vs Best-Fit's +0.2046 and PPO's +0.0745), successfully pushing the Pareto optimal boundary.
-2. **Computational Cost (Math vs Compute):** The Transformer MaskablePPO model provides a proof-of-concept for direct placement but costs **~500x more CPU latency** than Best-Fit. In contrast, the Lookahead MLP Ranker offers a sweet spot, requiring only **~8.7x latency** while yielding the highest performance.
-3. **Synergy of Blended Planning:** Ablation studies prove that blending the Neural Ranker with simulation (0.2 / 0.8 ratio) at a Lookahead Depth of 12 produces synergistic results superior to using either method alone.
+A machine-readable citation file is also available in [`CITATION.cff`](CITATION.cff).
 
 ---
 
-## Author
-**Sachin Mishra**  
-Reinforcement Learning • Systems Optimization • Machine Learning
+## License & Third-Party Notices
+
+* FluxAlloc source code is licensed under the [MIT License](LICENSE).
+* Third-party software dependencies and their licenses are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+---
+
+## Authors & Contributors
+
+* **Sachin Mishra** — *International Institute of Information Technology Bangalore*
+* **Lomesh Soni** — *International Institute of Information Technology Bangalore*
+* **Abhay Gotmare** — *International Institute of Information Technology Bangalore*

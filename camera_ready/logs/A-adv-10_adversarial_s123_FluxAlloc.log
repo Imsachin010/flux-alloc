@@ -1,0 +1,14 @@
+config: A-adv-10
+workload: adversarial
+seed: 123
+strategy: FluxAlloc
+util: 0.5938
+frag: 0.7500
+fail: 0.0758
+lgfr: 0.1016
+score: -0.1562
+hit: 0.9242
+miss: 0.0758
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

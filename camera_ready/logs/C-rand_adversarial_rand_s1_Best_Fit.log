@@ -1,0 +1,14 @@
+config: C-rand
+workload: adversarial_rand
+seed: 1
+strategy: Best Fit
+util: 0.9912
+frag: 0.7778
+fail: 0.9488
+lgfr: 0.0020
+score: +0.2134
+hit: 0.0512
+miss: 0.9488
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

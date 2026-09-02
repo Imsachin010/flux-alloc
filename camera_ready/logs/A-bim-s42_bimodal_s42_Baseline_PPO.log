@@ -1,0 +1,14 @@
+config: A-bim-s42
+workload: bimodal
+seed: 42
+strategy: Baseline PPO
+util: 0.9629
+frag: 0.7895
+fail: 0.3417
+lgfr: 0.0078
+score: +0.1734
+hit: 0.6583
+miss: 0.3417
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

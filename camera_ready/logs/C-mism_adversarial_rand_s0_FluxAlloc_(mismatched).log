@@ -1,0 +1,14 @@
+config: C-mism
+workload: adversarial_rand
+seed: 0
+strategy: FluxAlloc (mismatched)
+util: 0.9863
+frag: 0.7143
+fail: 0.8734
+lgfr: 0.0039
+score: +0.2720
+hit: 0.1266
+miss: 0.8734
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

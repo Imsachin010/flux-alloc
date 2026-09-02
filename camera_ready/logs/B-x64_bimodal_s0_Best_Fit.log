@@ -1,0 +1,14 @@
+config: B-x64
+workload: bimodal
+seed: 0
+strategy: Best Fit
+util: 0.9512
+frag: 0.4000
+fail: 0.2994
+lgfr: 0.0293
+score: +0.5512
+hit: 0.7006
+miss: 0.2994
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 

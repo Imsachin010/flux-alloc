@@ -1,0 +1,14 @@
+config: A-unif-s42
+workload: uniform
+seed: 42
+strategy: Random Fit
+util: 0.8613
+frag: 0.7676
+fail: 0.5219
+lgfr: 0.0322
+score: +0.0937
+hit: 0.4781
+miss: 0.5219
+lat_mean_ms: 
+lat_med_ms: 
+lat_max_ms: 
